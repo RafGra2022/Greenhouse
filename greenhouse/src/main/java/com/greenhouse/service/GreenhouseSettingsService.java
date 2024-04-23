@@ -5,7 +5,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
-import com.greenhouse.controller.GreenhouseSettingsView;
+import com.greenhouse.controller.GreenhouseSettingsRequest;
+import com.greenhouse.controller.GreenhouseSettingsResponse;
 import com.greenhouse.model.GreenhouseSettingsEntity;
 import com.greenhouse.model.GreenhouseSettingsMapper;
 import com.greenhouse.repository.GreenhouseSettingsRepository;
@@ -21,28 +22,28 @@ public class GreenhouseSettingsService {
 	private final WebClient espGreenhouse;
 
 	@Transactional
-	public String handleSensorSettings(GreenhouseSettingsView greenhouseSettingsView) {
+	public String handleSensorSettings(GreenhouseSettingsRequest greenhouseSettingsRequest) {
 		GreenhouseSettingsEntity greenhouseSettingsEntity =	greenhouseSettingsRepository.findTopByOrderByIdDesc();
 
 		if(greenhouseSettingsEntity == null) {
-			greenhouseSettingsRepository.save(greenhouseSettingsMapper.mapToGreenhouseSettingsEntity(null,greenhouseSettingsView));
+			greenhouseSettingsRepository.save(greenhouseSettingsMapper.mapToGreenhouseSettingsEntity(null,greenhouseSettingsRequest));
 		}
 		
-		greenhouseSettingsEntity = greenhouseSettingsMapper.mapToGreenhouseSettingsEntity(greenhouseSettingsEntity,greenhouseSettingsView);
+		greenhouseSettingsEntity = greenhouseSettingsMapper.mapToGreenhouseSettingsEntity(greenhouseSettingsEntity,greenhouseSettingsRequest);
 		return "operation performed";
 	}
 	
-	public GreenhouseSettingsView readSettings() {
+	public GreenhouseSettingsResponse readSettings() {
 		GreenhouseSettingsEntity greenhouseSettingsEntity =	greenhouseSettingsRepository.findTopByOrderByIdDesc();
-		return greenhouseSettingsMapper.mapGreenhouseSettingsView(greenhouseSettingsEntity);
+		return greenhouseSettingsMapper.mapGreenhouseSettingsResponse(greenhouseSettingsEntity);
 	}
 	
-	public void notifyDevice(GreenhouseSettingsView greenhouseSettingsView) {
+	public void notifyDevice(GreenhouseSettingsRequest greenhouseSettingsRequest) {
 		espGreenhouse.put()
         .uri(uriBuilder -> uriBuilder
                 .path("/settings")
                 .build())
-        .body(BodyInserters.fromValue(greenhouseSettingsMapper.mapToSettingsData(greenhouseSettingsView)))
+        .body(BodyInserters.fromValue(greenhouseSettingsMapper.mapToSettingsData(greenhouseSettingsRequest)))
         .retrieve()
         .bodyToMono(String.class).block();
 	}

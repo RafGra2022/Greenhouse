@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.greenhouse.dto.PowerUsage;
+import com.greenhouse.exception.EmptyRequestGreenhouseException;
+import com.greenhouse.exception.NotFoundInDatabaseGreenhouseException;
 import com.greenhouse.service.GreenhouseLogService;
 import com.greenhouse.service.GreenhouseSensorService;
 import com.greenhouse.service.GreenhouseSettingsService;
@@ -30,8 +33,8 @@ public class GreenhouseController {
 	private final TimeKeeper timeKeeper;
 
 	@PostMapping("/sensor")
-	public ResponseEntity<String> saveSensorData(@RequestBody SensorDataView sensorDataView) {
-		return ResponseEntity.ok(greenhouseService.handleSensorData(sensorDataMapper.mapToSensorData(sensorDataView)));
+	public ResponseEntity<String> saveSensorData(@RequestBody SensorDataRequest sensorDataRequest) {
+		return ResponseEntity.ok(greenhouseService.handleSensorData(sensorDataMapper.mapToSensorData(sensorDataRequest)));
 	}
 
 	@GetMapping("/sensor")
@@ -40,30 +43,35 @@ public class GreenhouseController {
 	}
 
 	@PostMapping("/settings")
-	public ResponseEntity<String> saveSettings(@RequestBody GreenhouseSettingsView greenhouseSettingsView) {
-		greenhouseSettingsService.notifyDevice(greenhouseSettingsView);
-		return ResponseEntity.ok(greenhouseSettingsService.handleSensorSettings(greenhouseSettingsView));
+	public ResponseEntity<String> saveSettings(@RequestBody GreenhouseSettingsRequest greenhouseSettingsRequest) {
+		greenhouseSettingsService.notifyDevice(greenhouseSettingsRequest);
+		return ResponseEntity.ok(greenhouseSettingsService.handleSensorSettings(greenhouseSettingsRequest));
 	}
 
 	@PostMapping("/log")
-	public ResponseEntity<String> logDevice(@RequestBody DeviceStatusView deviceStatusView) {
-		log.info("device log : " + deviceStatusView.deviceWorking());
-		return ResponseEntity.ok(greenhouseLogService.logDevice(deviceStatusView));
+	public ResponseEntity<String> logDevice(@RequestBody DeviceStatusRequest deviceStatusRequest) throws NotFoundInDatabaseGreenhouseException, EmptyRequestGreenhouseException {
+		log.info("device log : " + deviceStatusRequest.deviceWorking());
+		return ResponseEntity.ok(greenhouseLogService.logDevice(deviceStatusRequest));
+	}
+
+	@GetMapping("/log")
+	public ResponseEntity<PowerUsage> getDeviceLogs() {
+		return ResponseEntity.ok(greenhouseLogService.getDevicePowerUsageReport());
 	}
 
 	@GetMapping("/settings")
-	public GreenhouseSettingsView settings(){
+	public GreenhouseSettingsResponse settings(){
 		return greenhouseSettingsService.readSettings();
 	}
 
 	@GetMapping("/forecast")
-	public List<ForecastView> forecast() {
+	public List<ForecastResponse> forecast() {
 		return greenhouseService.forecast();
 	}
 
 	@GetMapping("/sunrise")
-	public Sunrise sunrise() {
-		return new Sunrise(false);
+	public SunriseResponse sunriseResponse() {
+		return new SunriseResponse(false);
 	}
 
 	@GetMapping("/time")

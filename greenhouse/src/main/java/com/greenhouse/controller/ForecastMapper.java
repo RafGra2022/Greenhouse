@@ -7,12 +7,12 @@ import com.greenhouse.model.ForecastEntity;
 
 public class ForecastMapper {
 
-	public static List<ForecastView> mapToForecastView(List<ForecastData> forecasts) {
+	public static List<ForecastResponse> mapToForecastView(List<ForecastData> forecasts) {
 
 		return forecasts
 				.stream()
 				.map(forecast->{
-			return new ForecastView(forecast.date().toString(), forecast.highTemperature(),
+			return new ForecastResponse(forecast.date().toString(), forecast.highTemperature(),
 					forecast.lowTemperature(), forecast.precip(),
 					forecast.phenomenom(), forecast.sunrise().toString(), forecast.sunset().toString()); 
 				}).toList();

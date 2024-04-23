@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 import com.greenhouse.controller.DeviceStatus;
 import com.greenhouse.controller.ForecastMapper;
-import com.greenhouse.controller.ForecastView;
+import com.greenhouse.controller.ForecastResponse;
 import com.greenhouse.controller.SensorSystemDataView;
 import com.greenhouse.controller.SystemStatus;
 import com.greenhouse.dto.ForecastComparator;
@@ -67,7 +67,7 @@ public class GreenhouseSensorService {
 		return status;
 	}
 
-	public List<ForecastView> forecast() {
+	public List<ForecastResponse> forecast() {
 		List<ForecastData> forecasts = ForecastMapper
 				.mapToForecastData(forecastRepository.findByDateAfter(LocalDate.now().minusDays(1)));
 		List<ForecastData> forecastsMutableData = forecasts.stream().map(o -> o).collect(Collectors.toList());

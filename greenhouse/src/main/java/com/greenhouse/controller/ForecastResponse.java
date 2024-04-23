@@ -1,6 +1,6 @@
 package com.greenhouse.controller;
 
-public record ForecastView(
+public record ForecastResponse(
 		String date, 
 		Integer highTemperature, 
 		Integer lowTemperature, 

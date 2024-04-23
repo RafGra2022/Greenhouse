@@ -7,11 +7,11 @@ import com.greenhouse.dto.SensorData;
 @Component
 public class SensorDataMapper {
 
-	SensorData mapToSensorData(SensorDataView sensorDataView) {
+	SensorData mapToSensorData(SensorDataRequest sensorDataRequest) {
 
-		return new SensorData(sensorDataView.sensors().groundTemperature(), sensorDataView.sensors().airTemperature(),
-				sensorDataView.sensors().airHumidity(), sensorDataView.sensors().groundHumidity1(),
-				sensorDataView.sensors().groundHumidity2(), sensorDataView.sensors().groundHumidity3(),sensorDataView.deviceStatus().voltage());
+		return new SensorData(sensorDataRequest.sensors().groundTemperature(), sensorDataRequest.sensors().airTemperature(),
+				sensorDataRequest.sensors().airHumidity(), sensorDataRequest.sensors().groundHumidity1(),
+				sensorDataRequest.sensors().groundHumidity2(), sensorDataRequest.sensors().groundHumidity3(),sensorDataRequest.deviceStatus().voltage());
 	}
 
 
