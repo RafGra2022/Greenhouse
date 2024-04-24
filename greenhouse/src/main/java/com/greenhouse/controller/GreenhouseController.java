@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.greenhouse.dto.PowerUsage;
-import com.greenhouse.exception.EmptyRequestGreenhouseException;
 import com.greenhouse.service.GreenhouseLogService;
 import com.greenhouse.service.GreenhouseSensorService;
 import com.greenhouse.service.GreenhouseSettingsService;
@@ -33,9 +32,6 @@ public class GreenhouseController {
 
 	@PostMapping("/sensor")
 	public ResponseEntity<String> saveSensorData(@RequestBody SensorDataRequest sensorDataRequest) {
-		if(sensorDataRequest == null) {
-			throw new EmptyRequestGreenhouseException("Request has empty body");
-		}
 		return ResponseEntity.ok(greenhouseService.handleSensorData(sensorDataMapper.mapToSensorData(sensorDataRequest)));
 	}
 
