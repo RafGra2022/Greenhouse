@@ -1,6 +1,6 @@
 package com.greenhouse.exception;
 
-public class NotProcessedGreenhouseException extends Exception{
+public class NotProcessedGreenhouseException extends RuntimeException{
 
 	/**
 	 * 

@@ -37,7 +37,7 @@ public class GreenhouseSettingsService {
 		return "operation performed";
 	}
 	
-	public GreenhouseSettingsResponse readSettings() throws NotFoundInDatabaseGreenhouseException {
+	public GreenhouseSettingsResponse readSettings(){
 		GreenhouseSettingsEntity greenhouseSettingsEntity =	greenhouseSettingsRepository.findTopByOrderByIdDesc();
 		if(greenhouseSettingsEntity == null) {
 			throw new NotFoundInDatabaseGreenhouseException("Empty settings entity");

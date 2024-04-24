@@ -50,7 +50,7 @@ public class GreenhouseSensorService {
 		return null;
 	}
 
-	public SensorSystemDataView lastData() throws NotFoundInDatabaseGreenhouseException {
+	public SensorSystemDataView lastData(){
 		SensorData sensorData = null;
 		if (!sensorDataList.isEmpty()) {
 			sensorData = sensorDataList.get(sensorDataList.size() - 1);
@@ -73,7 +73,7 @@ public class GreenhouseSensorService {
 		return status;
 	}
 
-	public List<ForecastResponse> forecast() throws NotFoundInDatabaseGreenhouseException {
+	public List<ForecastResponse> forecast() {
 		List<ForecastData> forecasts = ForecastMapper
 				.mapToForecastData(forecastRepository.findByDateAfter(LocalDate.now().minusDays(1)));
 		if(forecasts == null) {

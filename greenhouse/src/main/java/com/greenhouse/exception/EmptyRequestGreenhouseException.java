@@ -1,6 +1,6 @@
 package com.greenhouse.exception;
 
-public class EmptyRequestGreenhouseException extends Exception  {
+public class EmptyRequestGreenhouseException extends RuntimeException  {
 
 	/**
 	 * 

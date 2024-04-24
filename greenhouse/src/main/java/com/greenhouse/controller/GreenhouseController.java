@@ -11,7 +11,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.greenhouse.dto.PowerUsage;
 import com.greenhouse.exception.EmptyRequestGreenhouseException;
-import com.greenhouse.exception.NotFoundInDatabaseGreenhouseException;
 import com.greenhouse.service.GreenhouseLogService;
 import com.greenhouse.service.GreenhouseSensorService;
 import com.greenhouse.service.GreenhouseSettingsService;
@@ -33,7 +32,7 @@ public class GreenhouseController {
 	private final TimeKeeper timeKeeper;
 
 	@PostMapping("/sensor")
-	public ResponseEntity<String> saveSensorData(@RequestBody SensorDataRequest sensorDataRequest) throws EmptyRequestGreenhouseException {
+	public ResponseEntity<String> saveSensorData(@RequestBody SensorDataRequest sensorDataRequest) {
 		if(sensorDataRequest == null) {
 			throw new EmptyRequestGreenhouseException("Request has empty body");
 		}
@@ -41,7 +40,7 @@ public class GreenhouseController {
 	}
 
 	@GetMapping("/sensor")
-	public SensorSystemDataView sensorData() throws NotFoundInDatabaseGreenhouseException {
+	public SensorSystemDataView sensorData(){
 		return greenhouseService.lastData();
 	}
 
@@ -52,23 +51,23 @@ public class GreenhouseController {
 	}
 
 	@PostMapping("/log")
-	public ResponseEntity<String> logDevice(@RequestBody DeviceStatusRequest deviceStatusRequest) throws NotFoundInDatabaseGreenhouseException, EmptyRequestGreenhouseException {
+	public ResponseEntity<String> logDevice(@RequestBody DeviceStatusRequest deviceStatusRequest){
 		log.info("device log : " + deviceStatusRequest.deviceWorking());
 		return ResponseEntity.ok(greenhouseLogService.logDevice(deviceStatusRequest));
 	}
 
 	@GetMapping("/log")
-	public ResponseEntity<PowerUsage> getDeviceLogs() throws NotFoundInDatabaseGreenhouseException {
+	public ResponseEntity<PowerUsage> getDeviceLogs() {
 		return ResponseEntity.ok(greenhouseLogService.getDevicePowerUsageReport());
 	}
 
 	@GetMapping("/settings")
-	public GreenhouseSettingsResponse settings() throws NotFoundInDatabaseGreenhouseException{
+	public GreenhouseSettingsResponse settings(){
 		return greenhouseSettingsService.readSettings();
 	}
 
 	@GetMapping("/forecast")
-	public List<ForecastResponse> forecast() throws NotFoundInDatabaseGreenhouseException {
+	public List<ForecastResponse> forecast() {
 		return greenhouseService.forecast();
 	}
 

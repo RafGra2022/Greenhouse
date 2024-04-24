@@ -1,6 +1,6 @@
 package com.greenhouse.exception;
 
-public class NotFoundInDatabaseGreenhouseException extends Exception {
+public class NotFoundInDatabaseGreenhouseException extends RuntimeException {
 
 	/**
 	 * 
