@@ -20,9 +20,12 @@ import com.greenhouse.controller.Sensor;
 import com.greenhouse.controller.SensorSystemDataView;
 import com.greenhouse.controller.SystemStatus;
 import com.greenhouse.dto.SensorData;
+import com.greenhouse.exception.NotFoundInDatabaseGreenhouseException;
 import com.greenhouse.model.GreenhouseSensorMapper;
 import com.greenhouse.model.SensorEntity;
 import com.greenhouse.repository.SensorRepository;
+
+import lombok.SneakyThrows;
 
 @ExtendWith(MockitoExtension.class)
 @RunWith(SpringRunner.class)
@@ -67,6 +70,7 @@ public class GreenhouseSensorServiceTest {
 	}
 	
 	@Test
+	@SneakyThrows
 	public void lastDataTest() {
 		Mockito.when(sensorRepository.findTopByOrderByIdDesc()).thenReturn(sensorEntity);
 		Mockito.when(greenhouseSensorMapper.mapToSensorData(sensorEntity)).thenReturn(new SensorData(15f, 15f, 60f, 55f, 43f, 55f, true));

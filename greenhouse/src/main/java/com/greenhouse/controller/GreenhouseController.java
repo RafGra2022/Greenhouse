@@ -33,12 +33,15 @@ public class GreenhouseController {
 	private final TimeKeeper timeKeeper;
 
 	@PostMapping("/sensor")
-	public ResponseEntity<String> saveSensorData(@RequestBody SensorDataRequest sensorDataRequest) {
+	public ResponseEntity<String> saveSensorData(@RequestBody SensorDataRequest sensorDataRequest) throws EmptyRequestGreenhouseException {
+		if(sensorDataRequest == null) {
+			throw new EmptyRequestGreenhouseException("Request has empty body");
+		}
 		return ResponseEntity.ok(greenhouseService.handleSensorData(sensorDataMapper.mapToSensorData(sensorDataRequest)));
 	}
 
 	@GetMapping("/sensor")
-	public SensorSystemDataView sensorData() {
+	public SensorSystemDataView sensorData() throws NotFoundInDatabaseGreenhouseException {
 		return greenhouseService.lastData();
 	}
 
@@ -55,17 +58,17 @@ public class GreenhouseController {
 	}
 
 	@GetMapping("/log")
-	public ResponseEntity<PowerUsage> getDeviceLogs() {
+	public ResponseEntity<PowerUsage> getDeviceLogs() throws NotFoundInDatabaseGreenhouseException {
 		return ResponseEntity.ok(greenhouseLogService.getDevicePowerUsageReport());
 	}
 
 	@GetMapping("/settings")
-	public GreenhouseSettingsResponse settings(){
+	public GreenhouseSettingsResponse settings() throws NotFoundInDatabaseGreenhouseException{
 		return greenhouseSettingsService.readSettings();
 	}
 
 	@GetMapping("/forecast")
-	public List<ForecastResponse> forecast() {
+	public List<ForecastResponse> forecast() throws NotFoundInDatabaseGreenhouseException {
 		return greenhouseService.forecast();
 	}
 

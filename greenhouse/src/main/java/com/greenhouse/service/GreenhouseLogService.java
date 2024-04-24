@@ -47,12 +47,15 @@ public class GreenhouseLogService {
 	}
 
 	@Transactional
-	public PowerUsage getDevicePowerUsageReport() {
+	public PowerUsage getDevicePowerUsageReport() throws NotFoundInDatabaseGreenhouseException {
 		LocalDateTime dateFrom = LocalDateTime.of(LocalDate.of(LocalDate.now().getYear(), LocalDate.now().getMonth(), 1),LocalTime.MIN);
 		LocalDateTime dateTo = LocalDateTime.of(LocalDate.of(LocalDate.now().getYear(), LocalDate.now().getMonth(),
 				LocalDate.now().getDayOfMonth()),LocalTime.MIDNIGHT).plusDays(1);
 		
 		List<GreenhouseDeviceLogEntity> logs = greenhouseDeviceLogRepository.findByDateFromBetween(dateFrom, dateTo);
+		if(logs == null) {
+			throw new NotFoundInDatabaseGreenhouseException("Not found any record in that period of time");
+		}
 		
 		List<DayPowerUsage> powerLogs =	logs.stream()
 				.map(log-> {

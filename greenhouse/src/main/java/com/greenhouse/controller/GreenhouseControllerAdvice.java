@@ -6,9 +6,11 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
 
 import com.greenhouse.exception.EmptyRequestGreenhouseException;
 import com.greenhouse.exception.NotFoundInDatabaseGreenhouseException;
+import com.greenhouse.exception.NotProcessedGreenhouseException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -23,8 +25,18 @@ public class GreenhouseControllerAdvice {
 	}
 	
 	@ExceptionHandler(EmptyRequestGreenhouseException.class)
-	public ResponseEntity<ErrorMessageResponse> emptyRequest(HttpServletRequest req, NotFoundInDatabaseGreenhouseException nFIDE){
-		return createErrorMessageResponse(req.getRequestURL().toString(), HttpStatus.BAD_REQUEST, nFIDE);
+	public ResponseEntity<ErrorMessageResponse> emptyRequest(HttpServletRequest req, EmptyRequestGreenhouseException eRGE){
+		return createErrorMessageResponse(req.getRequestURL().toString(), HttpStatus.BAD_REQUEST, eRGE);
+	}
+	
+	@ExceptionHandler(NotProcessedGreenhouseException.class)
+	public ResponseEntity<ErrorMessageResponse> notProcessedException(HttpServletRequest req, NotProcessedGreenhouseException nPGE){
+		return createErrorMessageResponse(req.getRequestURL().toString(), HttpStatus.SERVICE_UNAVAILABLE, nPGE);
+	}
+	
+	@ExceptionHandler(WebClientRequestException.class)
+	public ResponseEntity<ErrorMessageResponse> connectionError(HttpServletRequest req, WebClientRequestException wCRE){
+		return createErrorMessageResponse(req.getRequestURL().toString(), HttpStatus.SERVICE_UNAVAILABLE, wCRE);
 	}
 
 	private static ResponseEntity<ErrorMessageResponse> createErrorMessageResponse(String url, HttpStatus httpStatus,

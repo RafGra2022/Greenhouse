@@ -18,7 +18,9 @@ import com.greenhouse.controller.SystemStatus;
 import com.greenhouse.dto.ForecastComparator;
 import com.greenhouse.dto.ForecastData;
 import com.greenhouse.dto.SensorData;
+import com.greenhouse.exception.NotFoundInDatabaseGreenhouseException;
 import com.greenhouse.model.GreenhouseSensorMapper;
+import com.greenhouse.model.SensorEntity;
 import com.greenhouse.repository.ForecastRepository;
 import com.greenhouse.repository.SensorRepository;
 
@@ -48,14 +50,18 @@ public class GreenhouseSensorService {
 		return null;
 	}
 
-	public SensorSystemDataView lastData() {
+	public SensorSystemDataView lastData() throws NotFoundInDatabaseGreenhouseException {
 		SensorData sensorData = null;
 		if (!sensorDataList.isEmpty()) {
 			sensorData = sensorDataList.get(sensorDataList.size() - 1);
 			return greenhouseSensorMapper.mapToSensorDataView(sensorData, checkSystem(sensorData));
 		}
-		sensorData = greenhouseSensorMapper.mapToSensorData(sensorRepository.findTopByOrderByIdDesc());
-		return greenhouseSensorMapper.mapToSensorDataView(sensorRepository.findTopByOrderByIdDesc(), checkSystem(sensorData));
+		SensorEntity sensorEntity = sensorRepository.findTopByOrderByIdDesc();
+		if(sensorEntity == null) {
+			throw new NotFoundInDatabaseGreenhouseException("Not found any entity in repository");
+		}
+		sensorData = greenhouseSensorMapper.mapToSensorData(sensorEntity);
+		return greenhouseSensorMapper.mapToSensorDataView(sensorEntity, checkSystem(sensorData));
 	}
 	
 	private SystemStatus checkSystem(SensorData sensorData) {
@@ -67,9 +73,12 @@ public class GreenhouseSensorService {
 		return status;
 	}
 
-	public List<ForecastResponse> forecast() {
+	public List<ForecastResponse> forecast() throws NotFoundInDatabaseGreenhouseException {
 		List<ForecastData> forecasts = ForecastMapper
 				.mapToForecastData(forecastRepository.findByDateAfter(LocalDate.now().minusDays(1)));
+		if(forecasts == null) {
+			throw new NotFoundInDatabaseGreenhouseException("Empty forecast entity");
+		}
 		List<ForecastData> forecastsMutableData = forecasts.stream().map(o -> o).collect(Collectors.toList());
 
 		Collections.sort(forecastsMutableData, new ForecastComparator());
