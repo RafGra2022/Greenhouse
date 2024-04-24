@@ -1,5 +1,7 @@
 package com.greenhouse.controller;
 
+import java.util.concurrent.ExecutorService;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -24,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 public class GreenhouseControllerAdvice {
 	
 	private final ErrorNotificationHandler errorNotificationHandler;
+	private final ExecutorService executorService;
 
 	@ExceptionHandler(NotFoundInDatabaseGreenhouseException.class)
 	public ResponseEntity<ErrorMessageResponse> entityNotFound(HttpServletRequest req, NotFoundInDatabaseGreenhouseException nFIDE){
@@ -57,7 +60,7 @@ public class GreenhouseControllerAdvice {
 	private ResponseEntity<ErrorMessageResponse> createErrorMessageResponse(String url, HttpStatus httpStatus,
 			Exception ex) {
 		log.error("Request url: {}", url, ex);
-		errorNotificationHandler.sendMail(httpStatus.name() + " reason :" + ex.getMessage());
+		executorService.execute(errorNotificationHandler.sendMail(httpStatus.name() + " reason :" + ex.getMessage()));
 		HttpHeaders headers = new HttpHeaders();
 		headers.setContentType(MediaType.APPLICATION_JSON);
 		ErrorMessageResponse errorMessageResponse = new ErrorMessageResponse(ex.getMessage(), httpStatus.value());

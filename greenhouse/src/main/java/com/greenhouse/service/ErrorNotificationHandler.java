@@ -22,19 +22,26 @@ public class ErrorNotificationHandler {
 	@Value("${email.subject}")
 	private String subject;
 
-	public void sendMail(String body) {
+	public Runnable sendMail(String body) {
+		Runnable mailSender = new Runnable() {
 
-		MimeMessagePreparator preparator = new MimeMessagePreparator() {
-			public void prepare(MimeMessage mimeMessage) throws Exception {
-				mimeMessage.setRecipient(Message.RecipientType.TO, new InternetAddress(email));
-				mimeMessage.setFrom(new InternetAddress("noreply@gmail.com"));
-				mimeMessage.setSubject(subject);
-				mimeMessage.setText(body);
+			@Override
+			public void run() {
+				MimeMessagePreparator preparator = new MimeMessagePreparator() {
+					public void prepare(MimeMessage mimeMessage) throws Exception {
+						mimeMessage.setRecipient(Message.RecipientType.TO, new InternetAddress(email));
+						mimeMessage.setFrom(new InternetAddress("noreply@gmail.com"));
+						mimeMessage.setSubject(subject);
+						mimeMessage.setText(body);
+
+					}
+				};
+				javaMailSender.send(preparator);
+				log.info("Email was sent to : " + email);
 
 			}
 		};
-		javaMailSender.send(preparator);
-		log.info("Email was sent to : " + email);
-
+		return mailSender;
 	}
+
 }
