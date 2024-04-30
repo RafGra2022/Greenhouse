@@ -3,6 +3,7 @@ package com.greenhouse.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -20,9 +21,10 @@ import com.greenhouse.controller.Sensor;
 import com.greenhouse.controller.SensorSystemDataView;
 import com.greenhouse.controller.SystemStatus;
 import com.greenhouse.dto.SensorData;
-import com.greenhouse.exception.NotFoundInDatabaseGreenhouseException;
+import com.greenhouse.model.ForecastEntity;
 import com.greenhouse.model.GreenhouseSensorMapper;
 import com.greenhouse.model.SensorEntity;
+import com.greenhouse.repository.ForecastRepository;
 import com.greenhouse.repository.SensorRepository;
 
 import lombok.SneakyThrows;
@@ -34,6 +36,8 @@ public class GreenhouseSensorServiceTest {
 	@Mock
 	private SensorRepository sensorRepository;
 	@Mock
+	private ForecastRepository forecastRepository;
+	@Mock
 	private GreenhouseSensorMapper greenhouseSensorMapper;
 	@Mock
 	private List<SensorData> sensorDataList;
@@ -42,6 +46,8 @@ public class GreenhouseSensorServiceTest {
 	private GreenhouseSensorService greenhouseSensorService;
 	
 	private SensorEntity sensorEntity;
+	private ForecastEntity forecastEntityWithSunrise;
+	private ForecastEntity forecastEntityWithoutSunrise;
 
 	@BeforeEach
 	public void setup() {
@@ -55,6 +61,11 @@ public class GreenhouseSensorServiceTest {
 		sensorEntity.setInsstmp(LocalDateTime.now());
 		sensorEntity.setGroundHumidity3(55f);
 		sensorEntity.setVoltage(true);
+		
+		forecastEntityWithSunrise = new ForecastEntity();
+		forecastEntityWithSunrise.setSunrise(LocalTime.now().minusMinutes(2));
+		forecastEntityWithoutSunrise = new ForecastEntity();
+		forecastEntityWithoutSunrise.setSunrise(LocalTime.now().minusMinutes(61));
 	}
 	
 	@Test
@@ -76,5 +87,17 @@ public class GreenhouseSensorServiceTest {
 		Mockito.when(greenhouseSensorMapper.mapToSensorData(sensorEntity)).thenReturn(new SensorData(15f, 15f, 60f, 55f, 43f, 55f, true));
 		Mockito.when(greenhouseSensorMapper.mapToSensorDataView(sensorEntity,new SystemStatus(new DeviceStatus("UP", true)))).thenReturn(new SensorSystemDataView(	new Sensor(15f, 25f, 40f, 22f, 40f, 55f), new SystemStatus(new DeviceStatus("UP", true))));
 		assertEquals(new SensorSystemDataView(new Sensor(15f, 25f, 40f, 22f, 40f, 55f), new SystemStatus(new DeviceStatus("UP", true))), greenhouseSensorService.lastData());
+	}
+	
+	@Test
+	public void isSunriseConfirmationTest() {
+		Mockito.when(forecastRepository.findByDate(Mockito.any())).thenReturn(forecastEntityWithSunrise);
+		assertEquals(true,greenhouseSensorService.isSunrise());
+	}
+	
+	@Test
+	public void isSunriseNegationTest() {
+		Mockito.when(forecastRepository.findByDate(Mockito.any())).thenReturn(forecastEntityWithoutSunrise);
+		assertEquals(false,greenhouseSensorService.isSunrise());
 	}
 }

@@ -45,7 +45,7 @@ public class GreenhouseSettingsService {
 		return greenhouseSettingsMapper.mapGreenhouseSettingsResponse(greenhouseSettingsEntity);
 	}
 	
-	public void notifyDevice(GreenhouseSettingsRequest greenhouseSettingsRequest) {
+	public void notifyDeviceSettings(GreenhouseSettingsRequest greenhouseSettingsRequest) {
 		espGreenhouse.put()
         .uri(uriBuilder -> uriBuilder
                 .path("/settings")

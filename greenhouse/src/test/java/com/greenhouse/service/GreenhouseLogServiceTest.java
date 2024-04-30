@@ -16,7 +16,6 @@ import com.greenhouse.exception.NotFoundInDatabaseGreenhouseException;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class GreenhouseLogServiceTest {
 
-	
 	@Autowired
 	private GreenhouseLogService greenhouseLogService;
 	

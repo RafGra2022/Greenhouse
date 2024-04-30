@@ -42,7 +42,7 @@ public class GreenhouseController {
 
 	@PostMapping("/settings")
 	public ResponseEntity<String> saveSettings(@RequestBody GreenhouseSettingsRequest greenhouseSettingsRequest) {
-		greenhouseSettingsService.notifyDevice(greenhouseSettingsRequest);
+		greenhouseSettingsService.notifyDeviceSettings(greenhouseSettingsRequest);
 		return ResponseEntity.ok(greenhouseSettingsService.handleSensorSettings(greenhouseSettingsRequest));
 	}
 
@@ -69,7 +69,7 @@ public class GreenhouseController {
 
 	@GetMapping("/sunrise")
 	public SunriseResponse sunriseResponse() {
-		return new SunriseResponse(false);
+		return new SunriseResponse(greenhouseService.isSunrise());
 	}
 
 	@GetMapping("/time")
