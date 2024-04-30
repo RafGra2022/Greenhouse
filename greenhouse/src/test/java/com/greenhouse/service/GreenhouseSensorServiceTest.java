@@ -27,8 +27,6 @@ import com.greenhouse.model.SensorEntity;
 import com.greenhouse.repository.ForecastRepository;
 import com.greenhouse.repository.SensorRepository;
 
-import lombok.SneakyThrows;
-
 @ExtendWith(MockitoExtension.class)
 @RunWith(SpringRunner.class)
 public class GreenhouseSensorServiceTest {
@@ -81,7 +79,6 @@ public class GreenhouseSensorServiceTest {
 	}
 	
 	@Test
-	@SneakyThrows
 	public void lastDataTest() {
 		Mockito.when(sensorRepository.findTopByOrderByIdDesc()).thenReturn(sensorEntity);
 		Mockito.when(greenhouseSensorMapper.mapToSensorData(sensorEntity)).thenReturn(new SensorData(15f, 15f, 60f, 55f, 43f, 55f, true));

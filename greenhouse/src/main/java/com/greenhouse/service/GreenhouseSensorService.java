@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -31,10 +32,12 @@ import com.greenhouse.repository.ForecastRepository;
 import com.greenhouse.repository.SensorRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class GreenhouseSensorService {
 
 	private List<SensorData> sensorDataList = new ArrayList<>();
@@ -44,6 +47,7 @@ public class GreenhouseSensorService {
 	private final WebClient espGreenhouse;
 	
 	private LocalDateTime lastUpDateTime;
+	private Boolean sunrise = false;
 
 	public String handleSensorData(SensorData sensorData) {
 		lastUpDateTime = LocalDateTime.now();
@@ -94,10 +98,12 @@ public class GreenhouseSensorService {
 	}
 
 	
-//	@Scheduled(cron = "0/1 0 * * ?")
-	public Boolean notifyDeviceSunrise(String request) {
+	@Scheduled(cron = " 0 */1 * ? * *")
+	public Boolean notifyDeviceSunrise() {
+		log.info("checking sunrise...");
 		boolean sunrise = isSunrise();
-		if (sunrise) {
+		if (sunrise != this.sunrise) {
+			this.sunrise = sunrise;
 			espGreenhouse.put()
 					.uri(uriBuilder -> uriBuilder.path("/sunrise").build())
 					.body(BodyInserters.fromValue(new SunriseResponse(sunrise)))
@@ -106,8 +112,10 @@ public class GreenhouseSensorService {
 						status -> Mono.error(new NotProcessedGreenhouseException(
 							"Something went wrong while communicate with esp8266")))
 					.bodyToMono(String.class).block();
+			log.info("is sunrise!!");
 			return true;
 		}
+		log.info("is NOT sunrise");
 		return false;
 	}
 
