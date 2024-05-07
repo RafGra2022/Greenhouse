@@ -32,15 +32,12 @@ import com.greenhouse.repository.ForecastRepository;
 import com.greenhouse.repository.SensorRepository;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class GreenhouseSensorService {
-
-	private List<SensorData> sensorDataList = new ArrayList<>();
+	
 	private final SensorRepository sensorRepository;
 	private final GreenhouseSensorMapper greenhouseSensorMapper;
 	private final ForecastRepository forecastRepository;
@@ -48,6 +45,7 @@ public class GreenhouseSensorService {
 	
 	private LocalDateTime lastUpDateTime;
 	private Boolean sunrise = false;
+	private List<SensorData> sensorDataList = new ArrayList<>();
 
 	public String handleSensorData(SensorData sensorData) {
 		lastUpDateTime = LocalDateTime.now();
@@ -75,15 +73,6 @@ public class GreenhouseSensorService {
 		sensorData = greenhouseSensorMapper.mapToSensorData(sensorEntity);
 		return greenhouseSensorMapper.mapToSensorDataView(sensorEntity, checkSystem(sensorData));
 	}
-	
-	private SystemStatus checkSystem(SensorData sensorData) {
-		SystemStatus status = new SystemStatus(new DeviceStatus("UP",sensorData.voltage()));
-		if (ChronoUnit.SECONDS.between(lastUpDateTime != null ? lastUpDateTime : LocalDateTime.now(),
-				LocalDateTime.now()) > 60L) {
-			status = new SystemStatus(new DeviceStatus("DOWN",sensorData.voltage()));
-		}
-		return status;
-	}
 
 	public List<ForecastResponse> forecast() {
 		List<ForecastData> forecasts = ForecastMapper
@@ -96,11 +85,9 @@ public class GreenhouseSensorService {
 		Collections.sort(forecastsMutableData, new ForecastComparator());
 		return ForecastMapper.mapToForecastView(forecastsMutableData);
 	}
-
 	
 	@Scheduled(cron = " 0 */1 * ? * *")
 	public Boolean notifyDeviceSunrise() {
-		log.info("checking sunrise...");
 		boolean sunrise = isSunrise();
 		if (sunrise != this.sunrise) {
 			this.sunrise = sunrise;
@@ -112,10 +99,8 @@ public class GreenhouseSensorService {
 						status -> Mono.error(new NotProcessedGreenhouseException(
 							"Something went wrong while communicate with esp8266")))
 					.bodyToMono(String.class).block();
-			log.info("is sunrise!!");
 			return true;
 		}
-		log.info("is NOT sunrise");
 		return false;
 	}
 
@@ -127,5 +112,14 @@ public class GreenhouseSensorService {
 			return true;
 		}
 		return false;
+	}
+	
+	private SystemStatus checkSystem(SensorData sensorData) {
+		SystemStatus status = new SystemStatus(new DeviceStatus("UP",sensorData.voltage()));
+		if (ChronoUnit.SECONDS.between(lastUpDateTime != null ? lastUpDateTime : LocalDateTime.now(),
+				LocalDateTime.now()) > 60L) {
+			status = new SystemStatus(new DeviceStatus("DOWN",sensorData.voltage()));
+		}
+		return status;
 	}
 }

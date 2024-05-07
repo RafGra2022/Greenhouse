@@ -2,6 +2,7 @@ package com.greenhouse.controller;
 
 import java.util.concurrent.ExecutorService;
 
+import org.apache.catalina.connector.ClientAbortException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -30,34 +31,49 @@ public class GreenhouseControllerAdvice {
 
 	@ExceptionHandler(NotFoundInDatabaseGreenhouseException.class)
 	public ResponseEntity<ErrorMessageResponse> entityNotFound(HttpServletRequest req, NotFoundInDatabaseGreenhouseException nFIDE){
-		return createErrorMessageResponse(req.getRequestURL().toString(), HttpStatus.INTERNAL_SERVER_ERROR, nFIDE);
+		return createErrorMessageResponseWithMessage(req.getRequestURL().toString(), HttpStatus.INTERNAL_SERVER_ERROR, nFIDE);
 	}
 	
 	@ExceptionHandler(EmptyRequestGreenhouseException.class)
 	public ResponseEntity<ErrorMessageResponse> emptyRequest(HttpServletRequest req, EmptyRequestGreenhouseException eRGE){
-		return createErrorMessageResponse(req.getRequestURL().toString(), HttpStatus.BAD_REQUEST, eRGE);
+		return createErrorMessageResponseWithMessage(req.getRequestURL().toString(), HttpStatus.BAD_REQUEST, eRGE);
 	}
 	
 	@ExceptionHandler(NotProcessedGreenhouseException.class)
 	public ResponseEntity<ErrorMessageResponse> notProcessedException(HttpServletRequest req, NotProcessedGreenhouseException nPGE){
-		return createErrorMessageResponse(req.getRequestURL().toString(), HttpStatus.SERVICE_UNAVAILABLE, nPGE);
+		return createErrorMessageResponseWithMessage(req.getRequestURL().toString(), HttpStatus.SERVICE_UNAVAILABLE, nPGE);
 	}
 	
 	@ExceptionHandler(WebClientRequestException.class)
 	public ResponseEntity<ErrorMessageResponse> connectionError(HttpServletRequest req, WebClientRequestException wCRE){
-		return createErrorMessageResponse(req.getRequestURL().toString(), HttpStatus.SERVICE_UNAVAILABLE, wCRE);
+		return createErrorMessageResponseWithMessage(req.getRequestURL().toString(), HttpStatus.SERVICE_UNAVAILABLE, wCRE);
 	}
 	
 	@ExceptionHandler(HttpMessageNotReadableException.class)
 	public ResponseEntity<ErrorMessageResponse> emptyBody(HttpServletRequest req, HttpMessageNotReadableException hMNRE){
-		return createErrorMessageResponse(req.getRequestURL().toString(), HttpStatus.NO_CONTENT, hMNRE);
+		return createErrorMessageResponseWithMessage(req.getRequestURL().toString(), HttpStatus.NO_CONTENT, hMNRE);
 	}
+	
+	@ExceptionHandler(ClientAbortException.class)
+	public ResponseEntity<ErrorMessageResponse> emptyBody(HttpServletRequest req, ClientAbortException cAE){
+		return createErrorMessageResponse(req.getRequestURL().toString(), HttpStatus.NO_CONTENT, cAE);
+	}
+	
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<ErrorMessageResponse> unknownError(HttpServletRequest req, Exception ex){
-		return createErrorMessageResponse(req.getRequestURL().toString(), HttpStatus.SERVICE_UNAVAILABLE, ex);
+		return createErrorMessageResponseWithMessage(req.getRequestURL().toString(), HttpStatus.SERVICE_UNAVAILABLE, ex);
+	}
+	
+	private ResponseEntity<ErrorMessageResponse> createErrorMessageResponse(String url, HttpStatus httpStatus,
+			Exception ex) {
+		log.error("Request url: {}", url, ex);
+		HttpHeaders headers = new HttpHeaders();
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		ErrorMessageResponse errorMessageResponse = new ErrorMessageResponse(ex.getMessage(), httpStatus.value());
+		return ResponseEntity.status(httpStatus).headers(headers).body(errorMessageResponse);
 	}
 
-	private ResponseEntity<ErrorMessageResponse> createErrorMessageResponse(String url, HttpStatus httpStatus,
+	private ResponseEntity<ErrorMessageResponse> createErrorMessageResponseWithMessage(String url, HttpStatus httpStatus,
 			Exception ex) {
 		log.error("Request url: {}", url, ex);
 		executorService.execute(errorNotificationHandler.sendMail(httpStatus.name() + " reason :" + ex.getMessage()));
