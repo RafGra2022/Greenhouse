@@ -43,6 +43,9 @@ public class GreenhouseSensorServiceTest {
 	@InjectMocks
 	private GreenhouseSensorService greenhouseSensorService;
 	
+	@InjectMocks
+	private ForecastService forecastService;
+	
 	private SensorEntity sensorEntity;
 	private ForecastEntity forecastEntityWithSunrise;
 	private ForecastEntity forecastEntityWithoutSunrise;
@@ -89,12 +92,12 @@ public class GreenhouseSensorServiceTest {
 	@Test
 	public void isSunriseConfirmationTest() {
 		Mockito.when(forecastRepository.findByDate(Mockito.any())).thenReturn(forecastEntityWithSunrise);
-		assertEquals(true,greenhouseSensorService.isSunrise());
+		assertEquals(true,forecastService.isSunrise());
 	}
 	
 	@Test
 	public void isSunriseNegationTest() {
 		Mockito.when(forecastRepository.findByDate(Mockito.any())).thenReturn(forecastEntityWithoutSunrise);
-		assertEquals(false,greenhouseSensorService.isSunrise());
+		assertEquals(false,forecastService.isSunrise());
 	}
 }

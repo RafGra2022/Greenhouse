@@ -6,15 +6,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.greenhouse.dto.PowerUsage;
+import com.greenhouse.service.ForecastService;
 import com.greenhouse.service.GreenhouseLogService;
 import com.greenhouse.service.GreenhouseSensorService;
 import com.greenhouse.service.GreenhouseSettingsService;
 import com.greenhouse.service.TimeKeeper;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,6 +29,7 @@ public class GreenhouseController {
 
 	private final GreenhouseSensorService greenhouseService;
 	private final GreenhouseLogService greenhouseLogService;
+	private final ForecastService forecastService;
 	private final GreenhouseSettingsService greenhouseSettingsService;
 	private final SensorDataMapper sensorDataMapper;
 	private final TimeKeeper timeKeeper;
@@ -56,6 +60,13 @@ public class GreenhouseController {
 	public ResponseEntity<PowerUsage> getDeviceLogs() {
 		return ResponseEntity.ok(greenhouseLogService.getDevicePowerUsageReport());
 	}
+	
+	@GetMapping("/report")
+	public ResponseEntity<PowerUsage> getDeviceReport(
+			@RequestHeader @Valid String year,
+			@RequestHeader @Valid String month) {
+		return ResponseEntity.ok(greenhouseLogService.getDevicePowerUsageReport());
+	}
 
 	@GetMapping("/settings")
 	public GreenhouseSettingsResponse settings(){
@@ -64,12 +75,12 @@ public class GreenhouseController {
 
 	@GetMapping("/forecast")
 	public List<ForecastResponse> forecast() {
-		return greenhouseService.forecast();
+		return forecastService.forecast();
 	}
 
 	@GetMapping("/sunrise")
 	public SunriseResponse sunriseResponse() {
-		return new SunriseResponse(greenhouseService.isSunrise());
+		return new SunriseResponse(forecastService.isSunrise());
 	}
 
 	@GetMapping("/time")

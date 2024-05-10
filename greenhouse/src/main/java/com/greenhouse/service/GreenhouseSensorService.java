@@ -1,38 +1,22 @@
 package com.greenhouse.service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.BodyInserters;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import com.greenhouse.controller.DeviceStatus;
-import com.greenhouse.controller.ForecastMapper;
-import com.greenhouse.controller.ForecastResponse;
 import com.greenhouse.controller.SensorSystemDataView;
-import com.greenhouse.controller.SunriseResponse;
 import com.greenhouse.controller.SystemStatus;
-import com.greenhouse.dto.ForecastComparator;
-import com.greenhouse.dto.ForecastData;
 import com.greenhouse.dto.SensorData;
 import com.greenhouse.exception.NotFoundInDatabaseGreenhouseException;
-import com.greenhouse.exception.NotProcessedGreenhouseException;
 import com.greenhouse.model.GreenhouseSensorMapper;
 import com.greenhouse.model.SensorEntity;
-import com.greenhouse.repository.ForecastRepository;
 import com.greenhouse.repository.SensorRepository;
 
 import lombok.RequiredArgsConstructor;
-import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
@@ -40,11 +24,8 @@ public class GreenhouseSensorService {
 	
 	private final SensorRepository sensorRepository;
 	private final GreenhouseSensorMapper greenhouseSensorMapper;
-	private final ForecastRepository forecastRepository;
-	private final WebClient espGreenhouse;
 	
 	private LocalDateTime lastUpDateTime;
-	private Boolean sunrise = false;
 	private List<SensorData> sensorDataList = new ArrayList<>();
 
 	public String handleSensorData(SensorData sensorData) {
@@ -72,46 +53,6 @@ public class GreenhouseSensorService {
 		}
 		sensorData = greenhouseSensorMapper.mapToSensorData(sensorEntity);
 		return greenhouseSensorMapper.mapToSensorDataView(sensorEntity, checkSystem(sensorData));
-	}
-
-	public List<ForecastResponse> forecast() {
-		List<ForecastData> forecasts = ForecastMapper
-				.mapToForecastData(forecastRepository.findByDateAfter(LocalDate.now().minusDays(1)));
-		if(forecasts == null) {
-			throw new NotFoundInDatabaseGreenhouseException("Empty forecast entity");
-		}
-		List<ForecastData> forecastsMutableData = forecasts.stream().map(o -> o).collect(Collectors.toList());
-
-		Collections.sort(forecastsMutableData, new ForecastComparator());
-		return ForecastMapper.mapToForecastView(forecastsMutableData);
-	}
-	
-	@Scheduled(cron = " 0 */1 * ? * *")
-	public Boolean notifyDeviceSunrise() {
-		boolean sunrise = isSunrise();
-		if (sunrise != this.sunrise) {
-			this.sunrise = sunrise;
-			espGreenhouse.put()
-					.uri(uriBuilder -> uriBuilder.path("/sunrise").build())
-					.body(BodyInserters.fromValue(new SunriseResponse(sunrise)))
-					.retrieve()
-					.onStatus(status -> status != HttpStatus.OK,
-						status -> Mono.error(new NotProcessedGreenhouseException(
-							"Something went wrong while communicate with esp8266")))
-					.bodyToMono(String.class).block();
-			return true;
-		}
-		return false;
-	}
-
-	public Boolean isSunrise() {
-		LocalTime now = LocalTime.now();
-		LocalTime sunrise = forecastRepository.findByDate(LocalDate.now()).getSunrise();
-		LocalTime sunrisePlusHour = sunrise.plusHours(1);
-		if(now.isAfter(sunrise) && now.isBefore(sunrisePlusHour)) {
-			return true;
-		}
-		return false;
 	}
 	
 	private SystemStatus checkSystem(SensorData sensorData) {
