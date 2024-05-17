@@ -3,6 +3,7 @@ package com.greenhouse.service;
 import java.time.Duration;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -20,18 +21,18 @@ public class ESPCondition {
 
 	private final WebClient espGreenhouse;
 	
-//	@Scheduled(cron = "0 0 0 */3 * *")
+	@Scheduled(cron = "0 0 0 */3 * *")
 	public void resetDevice() {
-		log.info("reseting device...");
-		espGreenhouse.get()
-		.uri(uriBuilder -> uriBuilder.path("/reset").build()).httpRequest(httpRequest -> {
-		    HttpClientRequest reactorRequest = httpRequest.getNativeRequest();
-		    reactorRequest.responseTimeout(Duration.ofSeconds(15));
-		  })
-		.retrieve()
+		log.info("reseting ESP device...");
+		espGreenhouse
+			.get()
+			.uri(uriBuilder -> uriBuilder.path("/reset").build())
+			.httpRequest(httpRequest -> {
+			HttpClientRequest reactorRequest = httpRequest.getNativeRequest();
+			reactorRequest.responseTimeout(Duration.ofSeconds(15));
+		}).retrieve()
 		.onStatus(status -> status != HttpStatus.OK,
-			status -> Mono.error(new NotProcessedGreenhouseException(
-				"ESP reset")))
+			status -> Mono.error(new NotProcessedGreenhouseException("ESP reset")))
 		.bodyToMono(String.class)
 		.block();
 	}

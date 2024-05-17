@@ -14,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.greenhouse.controller.DeviceStatus;
@@ -35,6 +36,8 @@ public class GreenhouseSensorServiceTest {
 	private SensorRepository sensorRepository;
 	@Mock
 	private ForecastRepository forecastRepository;
+	@InjectMocks
+	private ForecastEntity forecastEntity;
 	@Mock
 	private GreenhouseSensorMapper greenhouseSensorMapper;
 	@Mock
@@ -91,13 +94,13 @@ public class GreenhouseSensorServiceTest {
 	
 	@Test
 	public void isSunriseConfirmationTest() {
-		Mockito.when(forecastRepository.findByDate(Mockito.any())).thenReturn(forecastEntityWithSunrise);
+		ForecastService forecastService = new ForecastService(forecastRepository,null);
+		forecastService.setForecastEntity(forecastEntityWithSunrise);
 		assertEquals(true,forecastService.isSunrise());
 	}
 	
 	@Test
 	public void isSunriseNegationTest() {
-		Mockito.when(forecastRepository.findByDate(Mockito.any())).thenReturn(forecastEntityWithoutSunrise);
 		assertEquals(false,forecastService.isSunrise());
 	}
 }

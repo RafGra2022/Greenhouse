@@ -23,10 +23,14 @@ import com.greenhouse.model.ForecastEntity;
 import com.greenhouse.repository.ForecastRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
+@Setter
+@Slf4j
 public class ForecastService {
 	
 	private final ForecastRepository forecastRepository;
@@ -67,6 +71,7 @@ public class ForecastService {
 
 	@Scheduled(cron = " 0 0 2 */1 * *")
 	public void forecastCheck() {
+		log.info("sunrise time check");
 		forecastEntity = forecastRepository.findByDate(LocalDate.now());
 	}
 	

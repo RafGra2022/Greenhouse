@@ -9,7 +9,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 
 @Configuration
-public class EmailConfig {
+public class EmailConfiguration {
 
 	@Value("${email.password}")
 	private String password;
